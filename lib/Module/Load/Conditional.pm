@@ -14,8 +14,8 @@ BEGIN {
     use vars        qw[$VERSION @ISA $VERBOSE $CACHE @EXPORT_OK $ERROR];
     use Exporter;
     @ISA        =   qw[Exporter];
-    $VERSION    =   0.04;
-    $VERBOSE    =   1;
+    $VERSION    =   0.05;
+    $VERBOSE    =   0;
 
     @EXPORT_OK  =   qw[check_install can_load requires];
 }
@@ -28,7 +28,7 @@ Module::Load::Conditional - Looking up module information / loading at runtime
 
 =head1 SYNOPSIS
 
-    use Module::Load::Conditional qw[can_use check_install requires];
+    use Module::Load::Conditional qw[can_load check_install requires];
 
 
     my $use_list = {
@@ -267,11 +267,11 @@ This is a hashref of module/version pairs. The version indicates the
 minimum version to load. If no version is provided, any version is
 assumed to be good enough.
 
-=item verbose|complain
+=item verbose
 
 This controls whether warnings should be printed if a module failed 
-to load. A synonym is C<complain>. The default is to use the value 
-of $Module::Load::Conditional::VERBOSE.
+to load. 
+The default is to use the value of $Module::Load::Conditional::VERBOSE.
 
 =item nocache
 
@@ -288,7 +288,6 @@ sub can_load {
     my $tmpl = {
         modules     => { default => {}, strict_type => 1 },
         verbose     => { default => $VERBOSE },
-        complain    => { default => $VERBOSE },
         nocache     => { default => 0 },
     };
 
@@ -299,9 +298,6 @@ sub can_load {
         warn $ERROR if $VERBOSE;
         return;
     }
-
-    ### alias ###
-    $args->{verbose} ||= $args->{complain};
 
     ### layout of $CACHE:
     ### $CACHE = {
@@ -328,7 +324,7 @@ sub can_load {
             ### indicating UNSUCCESSFUL prior attempt of usage
             if (    !$args->{nocache}
                     && defined $CACHE->{$mod}->{usable}
-                    && ($CACHE->{$mod}->{version} >= $href->{$mod})
+                    && (($CACHE->{$mod}->{version}||0) >= $href->{$mod})
             ) {
                 $error = loc( q[Already tried to use '%1', which was unsuccesful], $mod);
                 last BLOCK;
@@ -438,7 +434,7 @@ following global variables:
 This controls whether Module::Load::Conditional will issue warnings and
 explenations as to why certain things may have failed. If you set it
 to 0, Module::Load::Conditional will not output any warnings.
-The default is 1;
+The default is 0;
 
 =head2 $Module::Load::Conditional::CACHE
 

@@ -9,12 +9,17 @@ use Test::More tests => 11;
 ### case 1 ###
 use_ok( 'Module::Load::Conditional' ) or diag "Module.pm not found.  Dying", die;
 
-### make sure it's verbose, good for debugging ###
-$Module::Load::Conditional::VERBOSE = 0;
+### stupid stupid warnings ###
+{   $Module::Load::Conditional::VERBOSE =   
+    $Module::Load::Conditional::VERBOSE = 0;
 
-*can_load       = *Module::Load::Conditional::can_load;
-*check_install  = *Module::Load::Conditional::check_install;
-*requires       = *Module::Load::Conditional::requires;
+    *can_load       = *Module::Load::Conditional::can_load
+                    = *Module::Load::Conditional::can_load;
+    *check_install  = *Module::Load::Conditional::check_install
+                    = *Module::Load::Conditional::check_install;
+    *requires       = *Module::Load::Conditional::requires
+                    = *Module::Load::Conditional::requires;
+}
 
 {
     my $rv = check_install(

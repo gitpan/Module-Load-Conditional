@@ -14,7 +14,7 @@ BEGIN {
     use vars        qw[$VERSION @ISA $VERBOSE $CACHE @EXPORT_OK $ERROR];
     use Exporter;
     @ISA        =   qw[Exporter];
-    $VERSION    =   0.03;
+    $VERSION    =   0.04;
     $VERBOSE    =   1;
 
     @EXPORT_OK  =   qw[check_install can_load requires];
@@ -226,13 +226,18 @@ sub check_install {
     ### only complain if we expected fo find a version higher than 0.0 anyway
     if( !defined $href->{version} ) {
 
-        ### if we got here, we didn't find the version
-        warn loc(q[Could not check version on '%1'], $args->{module} )
-                if $args->{verbose} and $args->{version} > 0;
+        {   ### don't warn about the 'not numeric' stuff ###
+            local $^W;
 
+            ### if we got here, we didn't find the version
+            warn loc(q[Could not check version on '%1'], $args->{module} )
+                    if $args->{verbose} and $args->{version} > 0;
+        }
         $href->{uptodate} = 1;
 
     } else {
+        ### don't warn about the 'not numeric' stuff ###
+        local $^W;
         $href->{uptodate} = $args->{version} <= $href->{version} ? 1 : 0;
     }
 

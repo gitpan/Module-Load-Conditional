@@ -4,7 +4,7 @@ use strict;
 use lib qw[../lib lib t/to_load to_load];
 use File::Spec ();
 
-use Test::More tests => 11;
+use Test::More tests => 12;
 
 ### case 1 ###
 use_ok( 'Module::Load::Conditional' ) or diag "Module.pm not found.  Dying", die;
@@ -74,6 +74,13 @@ use_ok( 'Module::Load::Conditional' ) or diag "Module.pm not found.  Dying", die
     my $bool = can_load( modules => $use_list );
 
     ok( $bool, q[Load simple module] );
+}
+
+{
+    my $use_list = { 'Commented' => 2 };
+    my $bool = can_load( modules => $use_list );
+
+    ok( $bool, q[Load module with a second, commented-out $VERSION] );
 }
 
 {

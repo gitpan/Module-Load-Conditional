@@ -11,10 +11,10 @@ use File::Spec  ();
 use FileHandle  ();
 
 BEGIN {
-    use vars        qw[$VERSION @ISA $VERBOSE $CACHE @EXPORT_OK];
+    use vars        qw[$VERSION @ISA $VERBOSE $CACHE @EXPORT_OK $ERROR];
     use Exporter;
     @ISA        =   qw[Exporter];
-    $VERSION    =   0.02;
+    $VERSION    =   0.03;
     $VERBOSE    =   1;
 
     @EXPORT_OK  =   qw[check_install can_load requires];
@@ -61,7 +61,10 @@ Module::Load::Conditional - Looking up module information / loading at runtime
     ### default is '1'
     $Module::Load::Conditional::VERBOSE = 0;
 
-
+    ### The last error that happened during a call to 'can_load'
+    my $err = $Module::Load::Conditional::ERROR;
+    
+    
 =head1 DESCRIPTION
 
 Module::Load::Conditional provides simple ways to query and possibly load any of
@@ -141,7 +144,7 @@ sub check_install {
 
     my $args;
     unless( $args = check( $tmpl, \%hash, $VERBOSE ) ) {
-        warn q[A problem occurred checking arguments] if $VERBOSE;
+        warn loc( q[A problem occurred checking arguments] ) if $VERBOSE;
         return;
     }
 
@@ -259,10 +262,11 @@ This is a hashref of module/version pairs. The version indicates the
 minimum version to load. If no version is provided, any version is
 assumed to be good enough.
 
-=item verbose
+=item verbose|complain
 
-This controls whether warnings should be printed if a module failed to
-load. The default is to use the value of $Module::Load::Conditional::VERBOSE.
+This controls whether warnings should be printed if a module failed 
+to load. A synonym is C<complain>. The default is to use the value 
+of $Module::Load::Conditional::VERBOSE.
 
 =item nocache
 
@@ -279,15 +283,20 @@ sub can_load {
     my $tmpl = {
         modules     => { default => {}, strict_type => 1 },
         verbose     => { default => $VERBOSE },
+        complain    => { default => $VERBOSE },
         nocache     => { default => 0 },
     };
 
     my $args;
 
     unless( $args = check( $tmpl, \%hash, $VERBOSE ) ) {
-        warn loc(q[Problem validating arguments!]) if $VERBOSE;
+        $ERROR = loc(q[Problem validating arguments!]);
+        warn $ERROR if $VERBOSE;
         return;
     }
+
+    ### alias ###
+    $args->{verbose} ||= $args->{complain};
 
     ### layout of $CACHE:
     ### $CACHE = {
@@ -367,6 +376,7 @@ sub can_load {
     } # BLOCK
 
     if( defined $error ) {
+        $ERROR = $error;
         Carp::carp( loc(q|%1 [THIS MAY BE A PROBLEM!]|,$error) ) if $args->{verbose};
         return undef;
     } else {
@@ -430,6 +440,12 @@ The default is 1;
 This holds the cache of the C<can_load> function. If you explicitly
 want to remove the current cache, you can set this variable to
 C<undef>
+
+=head2 $Module::Load::Conditional::ERROR
+
+This holds a string of the last error that happened during a call to
+C<can_load>. It is useful to inspect this when C<can_load> returns
+C<undef>.
 
 =head1 See Also
 

@@ -1,10 +1,22 @@
 ### Module::Load::Conditional test suite ###
+BEGIN { 
+    if( $ENV{PERL_CORE} ) {
+        chdir '../lib/Module/Load/Conditional' 
+            if -d '../lib/Module/Load/Conditional';
+        unshift @INC, '../../../..';
+    
+        ### fix perl location too
+        $^X = '../../../../../t/' . $^X;
+    }
+} 
+
+BEGIN { chdir 't' if -d 't' }
 
 use strict;
-use lib qw[../lib lib t/to_load to_load];
+use lib qw[../lib to_load];
 use File::Spec ();
 
-use Test::More tests => 12;
+use Test::More tests => 20;
 
 ### case 1 ###
 use_ok( 'Module::Load::Conditional' ) or diag "Module.pm not found.  Dying", die;
@@ -66,6 +78,16 @@ use_ok( 'Module::Load::Conditional' ) or diag "Module.pm not found.  Dying", die
 
 }
 
+### test $FILE_VERSION
+{   local $Module::Load::Conditional::FIND_VERSION = 0;
+    local $Module::Load::Conditional::FIND_VERSION = 0;
+    
+    my $rv = check_install( module  => 'Module::Load::Conditional' );
+
+    ok( $rv,                        'Testing $FIND_VERSION' );
+    is( $rv->{version}, undef,      "   No version info returned" );
+    ok( $rv->{uptodate},            "   Module marked as uptodate" );
+}    
 
 ### test 'can_load' ###
 
@@ -112,3 +134,26 @@ use_ok( 'Module::Load::Conditional' ) or diag "Module.pm not found.  Dying", die
 
     ok( !$flag, q[Detecting requirements] );
 }
+
+
+
+### test using the %INC lookup for check_install
+{   local $Module::Load::Conditional::CHECK_INC_HASH = 1;
+    local $Module::Load::Conditional::CHECK_INC_HASH = 1;
+    
+    {   package A::B::C::D; 
+        $A::B::C::D::VERSION = $$; 
+        $INC{'A/B/C/D.pm'}   = $$.$$;
+    }
+    
+    my $href = check_install( module => 'A::B::C::D', version => 0 );
+
+    ok( $href,                  'Found package in %INC' );
+    is( $href->{'file'}, $$.$$, '   Found correct file' );
+    is( $href->{'version'}, $$, '   Found correct version' );
+    ok( $href->{'uptodate'},    '   Marked as uptodate' );
+    ok( can_load( modules => { 'A::B::C::D' => 0 } ),
+                                '   can_load successful' );
+}
+
+

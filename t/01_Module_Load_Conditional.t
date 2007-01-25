@@ -19,7 +19,7 @@ use File::Spec ();
 use Test::More tests => 23;
 
 ### case 1 ###
-use_ok( 'Module::Load::Conditional' ) or diag "Module.pm not found.  Dying", die;
+use_ok( 'Module::Load::Conditional' );
 
 ### stupid stupid warnings ###
 {   $Module::Load::Conditional::VERBOSE =   
@@ -133,16 +133,17 @@ use_ok( 'Module::Load::Conditional' ) or diag "Module.pm not found.  Dying", die
 
 
 ### test 'requires' ###
+SKIP:{
+    skip "Depends on \$^X, which doesn't work well when testing the Perl core", 
+        1 if $ENV{PERL_CORE};
 
-{   my %list = map { $_ => 1 } requires('Carp');
-
+    my %list = map { $_ => 1 } requires('Carp');
+    
     my $flag;
     $flag++ unless delete $list{'Exporter'};
 
     ok( !$flag, q[Detecting requirements] );
 }
-
-
 
 ### test using the %INC lookup for check_install
 {   local $Module::Load::Conditional::CHECK_INC_HASH = 1;

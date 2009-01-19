@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Module-Load-Conditional
-version:            0.28
+version:            0.30
 abstract:           Looking up module information / loading at runtime
 author:
     - Jos Boumans <kane[at]cpan.org>

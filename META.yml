@@ -21,9 +21,10 @@ requires:
   Locale::Maketext::Simple: 0
   Module::CoreList: 2.22
   Module::Load: 0.11
+  Module::Metadata: 1.000005
   Params::Check: 0
   Test::More: 0
   version: 0.69
 resources:
   repository: https://github.com/jib/module-load-conditional
-version: 0.50
+version: 0.52

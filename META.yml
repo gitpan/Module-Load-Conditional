@@ -26,4 +26,4 @@ requires:
   version: 0.69
 resources:
   repository: https://github.com/jib/module-load-conditional
-version: 0.60
+version: 0.62
